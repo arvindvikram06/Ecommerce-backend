@@ -10,6 +10,8 @@ const cartSchema = new mongoose.Schema({
         required: true,
       },
       quantity: { type: Number, required: true },
+      price:{type:Number},
+      weight:{type:String}
     },
   ],
   createdAt: { type: Date, default: Date.now },

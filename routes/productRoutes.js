@@ -9,11 +9,15 @@ const {
   addProduct,
   getAllProducts,
   updateProductQuantity,
+  getProduct
 } = require("../controllers/productController");
 
 router.post("/add", authMiddleware, adminMiddleware, addProduct);
 
 router.get("/", getAllProducts);
+
+router.get("/:id", getProduct);
+
 
 // Route to update product quantity (Admin only)
 router.put(

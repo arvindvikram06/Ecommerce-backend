@@ -8,6 +8,10 @@ const cartRouter = require("./routes/cartRoutes.js")
 const addressRoutes = require("./routes/addressRouter.js");
 const checkoutRoutes = require("./routes/checkoutRouter.js");
 const paymentRoutes = require("./routes/paymentRouter.js")
+const categoryRoutes = require("./routes/categoryRouter.js")
+const feedbackRoutes = require("./routes/feedbackRouter.js")
+const adminRouters = require("./routes/adminRoutes.js")
+const shipmentRouters = require("./routes/shipmentRouter.js")
 dotenv.config();
 connectDB();
 
@@ -22,8 +26,12 @@ app.use("/api/auth", authRouter);
 app.use("/api/products", productRouter);
 app.use("/api/cart",cartRouter);
 app.use("/api/address", addressRoutes);
+app.use("/api/category", categoryRoutes);
+app.use("/api/feedback", feedbackRoutes);
 app.use("/api/checkout",checkoutRoutes)
 app.use("/api/verify-payment",paymentRoutes)
+app.use("/api/admin",adminRouters)
+app.use("/api/shipments",shipmentRouters)
 // app.use("/api/orders", require("./routes/orderRoutes"));
 // app.use("/api/payments", require("./routes/paymentRoutes"));
 

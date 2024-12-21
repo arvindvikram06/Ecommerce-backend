@@ -4,7 +4,7 @@ const User = require("../models/User");
 exports.authMiddleware = (req, res, next) => {
   const token = req.header("Authorization")?.split(" ")[1];
 
-  console.log(token);
+ 
   if (!token)
     return res.status(401).json({ message: "No token, authorization denied" });
 
@@ -20,6 +20,7 @@ exports.authMiddleware = (req, res, next) => {
 };
 
 exports.adminMiddleware = (req, res, next) => {
+ 
   if (req.user.role !== "ADMIN") {
     return res.status(403).json({ message: "Access denied, admin only" });
   }

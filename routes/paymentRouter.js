@@ -3,10 +3,12 @@ const crypto = require("crypto");
 const Order = require("../models/Order");
 const RAZORPAY_KEY_SECRET = "fZH6ibOfpW3YQjBimBou6w8q";
 const router = express.Router();
+const Cart = require("../models/Cart.js");
+const { authMiddleware } = require("../middlewares/authMiddleware.js");
 
-router.post("/", async (req, res) => {
+router.post("/",authMiddleware,async (req, res) => {
   const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
-
+   
   try {
   
     const order = await Order.findOne({ razorpayOrderId });
@@ -14,11 +16,6 @@ router.post("/", async (req, res) => {
     if (!order) {
       console.log("Order not found in database for Razorpay Order ID:", razorpayOrderId);
       return res.status(404).json({ message: "Order not found." });}
-
-    
-    // console.log("Order ID:", razorpayOrderId);
-    // console.log("Payment ID:", razorpayPaymentId);
-    // console.log("Provided Signature:", razorpaySignature);
 
     
     const hmac = crypto.createHmac("sha256", RAZORPAY_KEY_SECRET);
@@ -37,7 +34,9 @@ router.post("/", async (req, res) => {
     order.orderStatus = "Paid";
     order.razorpayPaymentId = razorpayPaymentId;
     await order.save();
-   
+    
+    await Cart.deleteMany({ userId: req.user.id });
+    
     res.status(200).json({ message: "Payment verified and order completed.", order });
   } catch (error) {
     console.error("Payment verification error:", error.message);
