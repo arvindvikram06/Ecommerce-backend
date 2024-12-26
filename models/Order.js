@@ -18,12 +18,14 @@ const orderSchema = new mongoose.Schema({
   shippingAddress: {
     addressLine1: { type: String, required: true },
     addressLine2: { type: String },
+    phoneNumber:{type:String},
     city: { type: String, required: true },
     state: { type: String, required: true },
     zipCode: { type: String, required: true },
     country: { type: String, required: true },
   },
   razorpayOrderId: { type: String },
+  waybill: { type: String },
   orderStatus: { type: String, default: "Pending" },
   createdAt: { type: Date, default: Date.now },
 });

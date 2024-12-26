@@ -1,16 +1,18 @@
 const Cart = require("../models/Cart");
 const Address = require("../models/Address");
 const Order = require("../models/Order");
+const Product = require("../models/Product");
 const Razorpay = require("razorpay");
+const { startSession } = require("mongoose");
 
-const razorpay = new Razorpay({
-  key_id: "rzp_test_MSDRKXkHnptMYU",
-  key_secret: "fZH6ibOfpW3YQjBimBou6w8q",
+const razorpayInstance = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
 exports.checkout = async (req, res) => {
   const { addressId } = req.body;
-  console.log("In checkout");
+  const session = await startSession();
 
   try {
     if (!req.user || !req.user.id) {
@@ -41,45 +43,65 @@ exports.checkout = async (req, res) => {
       0
     );
 
-    let order = await Order.findOne({
-      userId: req.user.id,
-      orderStatus: "Pending",
-    });
+    // Start a session for transaction handling
+    session.startTransaction();
 
-    if (!order) {
-      order = new Order({
-        userId: req.user.id,
-        items: cart.items.map((item) => ({
-          productId: item.productId._id,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        totalAmount,
-        shippingAddress,
-        orderStatus: "Pending",
-      });
+    // Deduct stock for the products in the cart
+    for (const item of cart.items) {
+      const product = await Product.findById(item.productId);
+      if (product.quantity < item.quantity) {
+        throw new Error(`Not enough stock for product: ${product.name}`);
+      }
+
+      product.quantity -= item.quantity;
+      await product.save({ session });
     }
 
-    const amountInPaise = Math.round(totalAmount * 100);
-    const options = {
-      amount: amountInPaise,
+    // Create Razorpay order
+    const razorpayOrder = await razorpayInstance.orders.create({
+      amount: totalAmount * 100, // Razorpay accepts amount in paise (1 INR = 100 paise)
       currency: "INR",
-      receipt: `order_${Date.now()}`,
-      payment_capture: 1,
-    };
+      receipt: `order_rcptid_${new Date().getTime()}`,
+      payment_capture: 1, // Automatic capture of payment
+    });
 
-    const razorpayOrder = await razorpay.orders.create(options);
-    order.razorpayOrderId = razorpayOrder.id;
-    await order.save();
+    // Create the order in our database
+    const order = new Order({
+      userId: req.user.id,
+      items: cart.items.map((item) => ({
+        productId: item.productId._id,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      totalAmount,
+      shippingAddress,
+      orderStatus: "Pending",
+      razorpayOrderId: razorpayOrder.id, 
+      waybill:""
+    });
 
-    console.log("Razorpay Order Created:", razorpayOrder);
+    await order.save({ session });
 
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Respond with Razorpay order details
     res.status(201).json({
       message: "Order placed successfully!",
       order,
       razorpayOrder,
+      currency: "INR",
+      amount: totalAmount,
     });
   } catch (error) {
+    // If anything fails, abort the transaction and handle errors
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+
+    session.endSession();
+
     console.error("Checkout error:", error.message || error);
     res
       .status(500)

@@ -2,8 +2,11 @@ const Product = require("../models/Product");
 
 exports.addProduct = async (req, res) => {
   try {
-    const { name,category, description, price, quantity, benefits, ingredients,weight } =
+    const { name,category, description, quantity, benefits, ingredients,weightAndPrice } =
       req.body;
+
+  const weight = weightAndPrice.map((item) => item.weight);
+  const price = weightAndPrice.map((item) => item.price);
       // console.log(req.body)
     const product = new Product({
       name,
@@ -47,7 +50,7 @@ exports.getAllProducts = async (req, res) => {
 
 exports.getProduct = async (req, res) => {
   try {
-    console.log("hello");
+    
     const id = req.params.id;
     const products = await Product.findById(id);
     if (id) {

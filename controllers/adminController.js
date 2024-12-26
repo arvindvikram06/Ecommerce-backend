@@ -1,95 +1,50 @@
 const axios = require("axios");
-const Warehouse = require("../models/Warehouse");
 
+const DELHIVERY_PICKUP_URL =
+  "https://staging-express.delhivery.com/fm/request/new/";
 
+exports.createPickupreq = async (req, res) => {
+  const { pickup_time, pickup_date, pickup_location, expected_package_count } =
+    req.body;
 
+  if (
+    !pickup_time ||
+    !pickup_date ||
+    !pickup_location ||
+    !expected_package_count
+  ) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
-const DELHIVERY_API_TOKEN = "0368e03c66b1fc26848d7d4bed4798c45de2b3cf";
-
-const DELHIVERY_API_URL =
-  "https://staging-express.delhivery.com/api/backend/clientwarehouse/create/";
-
-const createDelhiveryWarehouse = async (warehouseData) => {
   try {
-    const response = await axios.post(
-      DELHIVERY_API_URL,
+    const pickResponse = await axios.post(
+      DELHIVERY_PICKUP_URL,
       {
-        phone: warehouseData.phone,
-        city: warehouseData.city,
-        name: warehouseData.name,
-        pin: warehouseData.pin,
-        address: warehouseData.address,
-        country: warehouseData.country,
-        email: warehouseData.email,
-        registered_name: warehouseData.registered_name,
-        return_address: warehouseData.return_address,
-        return_pin: warehouseData.return_pin,
+        pickup_time,
+        pickup_date,
+        pickup_location,
+        expected_package_count,
       },
       {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          Authorization: `Token ${DELHIVERY_API_TOKEN}`, 
+          Authorization: `Token ${process.env.DELHIVERY_SECRET}`,
         },
       }
     );
-    return response.data;
-  } catch (error) {
-    console.error(
-      "Error creating warehouse with Delhivery:",
-      error.response ? error.response.data : error.message
-    );
-    throw new Error("Error integrating with Delhivery API");
-  }
-};
 
-
-exports.createWarehouse = async (req, res) => {
-  try {
-    const {
-      name,
-      phone,
-      email,
-      address,
-      pin,
-      city,
-      state,
-      country,
-      return_address,
-      return_pin,
-    } = req.body;
-
-    
-    const newWarehouse = new Warehouse({
-      name,
-      phone,
-      email,
-      address,
-      pin,
-      city,
-      state,
-      country,
-      return_address,
-      return_pin,
-    });
-
-   
-
-    
-    const delhiveryResponse = await createDelhiveryWarehouse(req.body);
-    console.log(delhiveryResponse)
-     const savedWarehouse = await newWarehouse.save();
-
-    
-    savedWarehouse.delhiveryWarehouseId = delhiveryResponse.id;
-    await savedWarehouse.save();
-
- 
-    res.status(201).json(savedWarehouse);
-  } catch (error) {
-    console.error("Error creating warehouse:", error.message);
-    res
-      .status(500)
-      .json({ message: "Error creating warehouse", error: error.message });
+    console.log("Pickup Response:", pickResponse.data);
+    return res
+      .status(200)
+      .json({
+        message: "Pickup request created successfully",
+        data: pickResponse.data,
+      });
+  } catch (err) {
+    console.error("Error while creating pickup request:", err.message);
+    return res
+      .status(400)
+      .json({ message: `Error while creating request: ${err.message}` });
   }
 };

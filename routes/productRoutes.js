@@ -19,7 +19,6 @@ router.get("/", getAllProducts);
 router.get("/:id", getProduct);
 
 
-// Route to update product quantity (Admin only)
 router.put(
   "/:productId",
   authMiddleware,

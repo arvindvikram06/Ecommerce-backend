@@ -3,6 +3,7 @@ const Address = require("../models/Address");
 
 exports.addAddress = async (req, res) => {
   try {
+    console.log(req.body)
     const newAddress = new Address({
       userId: req.user.id,
       ...req.body, 

@@ -17,12 +17,23 @@ exports.addCategory = async (req, res) => {
   }
 };
 
+exports.getCategory = async (req, res) => {
+  try {
+    const product = await Category.find();
+    return res
+      .status(200)
+      .json({ message: "Category fetched successfully", product });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch", error });
+  }
+};
+
 exports.deleteCategory = async (req, res) => {
   try {
-     const {categoryId} = req.body;
-     if(!categoryId){
-        return res.status(404).json({message:"Category not found"})
-     }
+    const { categoryId } = req.body;
+    if (!categoryId) {
+      return res.status(404).json({ message: "Category not found" });
+    }
     await Category.deleteOne(categoryId);
     return res
       .status(200)
@@ -31,5 +42,3 @@ exports.deleteCategory = async (req, res) => {
     return res.status(500).json({ message: "Failed to add Category", error });
   }
 };
-
-

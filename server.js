@@ -1,5 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
+dotenv.config();
 const connectDB = require("./config/db.js");
 const cors = require("cors");
 const authRouter = require("./routes/authRoutes.js");
@@ -10,9 +11,10 @@ const checkoutRoutes = require("./routes/checkoutRouter.js");
 const paymentRoutes = require("./routes/paymentRouter.js")
 const categoryRoutes = require("./routes/categoryRouter.js")
 const feedbackRoutes = require("./routes/feedbackRouter.js")
-const adminRouters = require("./routes/adminRoutes.js")
+const warehouseRoutes = require("./routes/warehouseRouter.js")
 const shipmentRouters = require("./routes/shipmentRouter.js")
-dotenv.config();
+const orderRouters = require("./routes/orderRouter.js")
+
 connectDB();
 
 const app = express();
@@ -29,8 +31,9 @@ app.use("/api/address", addressRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/checkout",checkoutRoutes)
-app.use("/api/verify-payment",paymentRoutes)
-app.use("/api/admin",adminRouters)
+app.use("/api/order", orderRouters);
+app.use("/api/payment",paymentRoutes)
+app.use("/api/admin",warehouseRoutes)
 app.use("/api/shipments",shipmentRouters)
 // app.use("/api/orders", require("./routes/orderRoutes"));
 // app.use("/api/payments", require("./routes/paymentRoutes"));
