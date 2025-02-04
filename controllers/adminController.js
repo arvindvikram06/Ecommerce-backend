@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 const DELHIVERY_PICKUP_URL =
-  "https://staging-express.delhivery.com/fm/request/new/";
+  "";
 
 exports.createPickupreq = async (req, res) => {
   const { pickup_time, pickup_date, pickup_location, expected_package_count } =
