@@ -5,7 +5,7 @@ const currentWarehouse = require("../models/currentWarehouse");
 const DELHIVERY_API_TOKEN = process.env.DELHIVERY_SECRET;
 
 const DELHIVERY_WAREHOUSE_URL =
-  "https://staging-express.delhivery.com/api/backend/clientwarehouse/create/";
+  "";
 
 const createDelhiveryWarehouse = async (warehouseData) => {
   try {
